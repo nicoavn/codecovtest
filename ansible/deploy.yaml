@@ -1,0 +1,52 @@
+
+- name: web app deploy
+  hosts: webservers
+  gather_facts: no
+  become: false
+  vars_files:
+    - "{{ lookup('env','ANSIBLE_ROLES_PATH') }}/includes/vars.yml"
+  vars:
+    first_run: false
+    app_cli_bin: "{{ pyapp3_venv_bin_dpath }}/ABC"
+    sentry_cron_cmd: "/usr/local/bin/cron-sentry --quiet {{ app_cli_bin }}"
+
+  remote_user: "{{project_user}}"
+  tags:
+    - web
+  roles:
+    - { role: pyapp3, pyapp3_op: deploy, tags: pyapp3-role }
+  tasks:
+    - name: Create initial database schema
+      shell: "{{ app_cli_bin }} develop db init"
+      args:
+        chdir: "{{ pyapp3_source_dpath }}"
+      when: first_run|bool
+      tags: db
+
+    - name: Alembic stamp as head
+      shell: "{{ pyapp3_venv_bin_dpath }}/alembic stamp head"
+      args:
+        chdir: "{{ pyapp3_source_dpath }}"
+      when: first_run|bool
+      tags: db
+
+    - name: Run any database migrations
+      shell: "{{ pyapp3_venv_bin_dpath }}/alembic upgrade head"
+      args:
+        chdir: "{{ pyapp3_source_dpath }}"
+      tags: db
+
+    - name: sentry dsn var for cron-sentry
+      cronvar:
+        name: SENTRY_DSN
+        value: '{{ pyapp3_sentry_dsn }}'
+      tags: cron
+
+    - name: Setup heartbeat cron job
+      cron:
+        name: run celery ping/log command every minute
+        minute: "*"
+        job: "{{ sentry_cron_cmd }} --quiet celery ping-alive"
+      when: app_celery_alive_url is defined
+      tags: cron
+

@@ -1,0 +1,54 @@
+{% macro render_link_text(node) %}
+{% if node.icon_class %}<i class="{{ node.icon_class }}"></i>{% endif %}{{ node.label | trim }}
+{% endmacro %}
+
+{% macro render_group(node, expand_to_current) %}
+    <a class="nav-link dropdown-toggle"
+        data-toggle="dropdown"
+        href="#"
+        role="button"
+        id="navgroup-{{ node.nav_group }}"
+        aria-haspopup="true"
+        aria-expanded="false"
+        >
+        {{ render_link_text(node) }}
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="navgroup-{{ node.nav_group }}">
+        {% for sub_node in node.permitted_sub_nodes %}
+            {{ render_node(sub_node) }}
+        {% endfor %}
+    </ul>
+{% endmacro %}
+
+{% macro render_node(node) -%}
+    {# render a node (and its children, if appropriate) #}
+    {% set NODE_LEAF = 1 %}
+
+    {% if node.node_type == NODE_LEAF %}
+        <li class="nav-item{{ ' nav-current' if node.has_current_route else ''}}" >
+            <a class="nav-link" href="{{ node.route.url }}">{{ render_link_text(node) }}</a>
+        </li>
+    {% elif node.sub_nodes %}
+        <li class="nav-item dropdown{{ ' nav-current' if node.has_current_route else ''}}">
+            {{ render_group(node, expand_to_current) }}
+        </li>
+    {% else %}
+        {# copied this from keg-auth nav template, but menu-header not defined in css yet and
+            not really sure when it would be used with horizontal nav.
+        #}
+        <li><a class="menu-header">{{ render_link_text(node) }}</a></li>
+    {% endif %}
+{%- endmacro %}
+
+{% macro render_menu(node) -%}
+    {% for sub_node in node.permitted_sub_nodes %}
+        {{ render_node(sub_node) }}
+    {% endfor %}
+{%- endmacro %}
+
+<nav class="navbar navbar-expand sticky-top navbar-light pr-4" role="navigation">
+    <a class="navbar-brand" href={{url_for('public.home')}}>ABC</a>
+    <ul class="navbar-nav ml-auto">
+        {{ render_menu(auth_manager.menus['main']) }}
+    </ul>
+</nav>

@@ -1,0 +1,29 @@
+Keg>=0.9.1
+Keg-Auth
+alembic
+bootstrap-flask
+celery>=5.0
+email_validator
+flake8
+Flask-Mail
+flask-sqlalchemy
+flask-webtest
+html-sanitizer
+# linkify required for "gfm-like" configuration
+markdown-it-py[linkify]
+psycopg2-binary
+pyquery
+pytest
+pytest-cov
+requests
+responses
+sentry_sdk
+simplejson
+sqlalchemy
+sqlalchemy-utils
+tox
+wtforms
+xlsxwriter
+
+# Additional Flake8 checks
+-e git+https://github.com/level12/flake8-level12.git#egg=flake8_level12

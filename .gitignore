@@ -1,0 +1,25 @@
+*.pyc
+*.egg-info
+/ABC-config.py
+*.coverage
+/.tox
+/coverage.xml
+/.pytests.xml
+/htmlcov
+.pytest_cache
+requirements/src/flake8-level12
+
+# .env file for Flask development server
+.flaskenv
+
+# Visual Studio Code clutter
+.vscode
+tags
+
+# Pycharm / JetBrains clutter
+.idea
+
+# Pyenv local env declaration file
+.python-version
+
+venv

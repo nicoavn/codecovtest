@@ -1,0 +1,63 @@
+.navbar {
+    background-color: #f3f3f3;
+    border-bottom: solid 1px #ddd;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.navbar-nav > .nav-item {
+    padding-top: .5rem;
+    padding-bottom: .5rem;
+}
+
+.navbar-nav > .nav-item.nav-current,
+.navbar-nav > .nav-item:hover {
+    background-color: #ddd;
+}
+
+.alert {
+    padding: .7rem;
+}
+
+.alert-dismissible .close {
+    right: 0px;
+}
+
+.alert-danger {
+    color:#a94442;
+    background-color:#f2dede;
+    border-color:#ebccd1
+}
+
+main {
+    margin-top: 1rem;
+}
+
+.datagrid .records {
+    width: 100%
+}
+
+.datagrid .edit-link, .datagrid .delete-link {
+    transition: all .2s ease-in-out;
+    display: inline-block;
+    margin: 0 .2em;
+    font-size: 14px;
+}
+
+.datagrid .edit-link:before {
+    content: "\f303";
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+}
+
+.datagrid .delete-link:before {
+    content: "\f1f8";
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    color: red;
+}
+
+.datagrid .delete-link:hover, .datagrid .edit-link:hover {
+    text-decoration: none;
+    transform: scale(1.5);
+}

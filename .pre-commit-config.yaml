@@ -1,0 +1,35 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+default_language_version:
+  python: python3.9
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.1.0  # Update as necessary with "pre-commit autoupdate"
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+      - id: debug-statements
+  - repo: https://github.com/psf/black
+    rev: 21.12b0  # Update as necessary with "pre-commit autoupdate"
+    hooks:
+      - id: black
+  - repo: https://github.com/pycqa/isort
+    rev: 5.10.1
+    hooks:
+      - id: isort
+        name: isort (python)
+# Use local for hooks not installed automatically by pre-commit
+  - repo: local
+    hooks:
+    -   id: flake8
+        name: flake8
+        language: python
+        'types': [python]
+        entry: flake8
+        files: ^ABC/
+    -   id: count-heads
+        name: Count Alembic Heads
+        language: system
+        entry: python scripts/count-heads.py

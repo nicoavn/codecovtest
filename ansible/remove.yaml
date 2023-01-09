@@ -1,0 +1,7 @@
+
+- name: web app remove
+  hosts: 127.0.0.1
+  connection: local
+  tasks:
+    - fail:
+        msg: Use level12-cli servers app-removal instead

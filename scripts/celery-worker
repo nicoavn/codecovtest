@@ -1,0 +1,6 @@
+#!/bin/sh
+
+# Over time, development environments can sometimes build up large queues of tasks that don't really
+# need to be ran.  So, use --purge to clean out the queues before starting.
+export KEG_LOG_STREAM_ENABLED=on
+celery --app ABC.celery.worker worker --autoscale=15,5 --purge

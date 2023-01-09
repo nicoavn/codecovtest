@@ -1,0 +1,5 @@
+- name: Deploy python app, while keeping venv
+  import_playbook: deploy.yaml
+  vars:
+    pyapp3_refresh_venv: false
+    pyapp3_force_venv_refresh: false

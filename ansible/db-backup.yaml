@@ -1,0 +1,59 @@
+- name: backup database
+  hosts: webservers
+  become: false
+  remote_user: "{{project_user}}"
+  roles:
+    - { role: pyapp3, pyapp3_op: noop, tags: pyapp3-role}
+  vars:
+    app_cli_bin: "{{ pyapp3_venv_bin_dpath }}/ABC"
+    backup_date: "{{ lookup('pipe', 'date -I') }}"
+  tasks:
+    - name: Run full backup
+      command: "{{ app_cli_bin }} db backup full"
+      notify: cleanup files
+      tags:
+        - full
+        - backup
+
+    - name: Fetch full backup
+      local_action: command rsync -a {{project_user}}@{{ ansible_ssh_host }}:/tmp/{{app_db_name}}-full.bak /tmp/
+      tags:
+        - full
+        - rsync
+
+    - name: Run date based backup
+      command: "{{ app_cli_bin }} db backup date {{backup_date}}"
+      notify: cleanup directory
+      tags:
+        - date
+        - backup
+
+    - name: Fetch date based backup
+      local_action: command rsync -az {{project_user}}@{{ ansible_ssh_host }}:/tmp/{{app_db_name}}-date-* /tmp/
+      tags:
+        - date
+        - rsync
+
+    - name: Run SQL backup
+      command: "{{ app_cli_bin }} db backup sql"
+      notify: cleanup files
+      tags:
+        - sql
+        - backup
+
+    - name: Fetch SQL backups
+      local_action: command rsync -az {{project_user}}@{{ ansible_ssh_host }}:/tmp/{{app_db_name}}-*.sql /tmp/
+      tags:
+        - sql
+        - rsync
+
+  handlers:
+    - name: cleanup files
+      file: path=/tmp/{{item}} state=absent
+      with_items:
+        - "{{app_db_name}}-full.bak"
+        - "{{app_db_name}}-schema.sql"
+        - "{{app_db_name}}-alembic.sql"
+    - name: cleanup directory
+      shell: rm -rf /tmp/{{app_db_name}}-date-*
+

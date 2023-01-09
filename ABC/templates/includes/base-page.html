@@ -1,0 +1,25 @@
+{% import "includes/bootstrap-utils.html" as utils %}
+{% import "keg_auth/navigation.html" as navigation %}
+{% extends "includes/base.html" %}
+
+{% block body_content %}
+    {% block body_content_head %}
+    {% include('includes/navbar.html') %}
+    {{utils.flashed_messages(messages, dismissible=True, container=False)}}
+    {% endblock %}
+
+    {% block page_main %}
+    <main role="main" class="container-fluid">
+        {% block page_main_head %}{% endblock %}
+        {% block page_main_content %}
+            {% block page_content_pre %}{% endblock %}
+            {% block page_content %}{% endblock %}
+            {% block page_content_post %}{% endblock %}
+        {% endblock %}
+        {% block page_main_foot %}{% endblock %}
+    </main>
+    {% endblock page_main %}
+
+    {% block body_content_foot %} {% endblock %}
+{% endblock %}
+

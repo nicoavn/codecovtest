@@ -1,0 +1,78 @@
+use_pvt_dns: false
+
+project_ident: ABC
+project_ident_env: ABC-{{ app_environment }}
+project_authorized_keys_fpath: files/project-user-authorized-keys
+
+app_db_host: "{{ lookup('dig', '+short', 'circus.pvt.{{ network_domain }}', '@ns-452.awsdns-56.com') }}"
+
+
+# Host and ip setup
+# Note: if you get a dnspython error from dig lookups, install dnspython with pip in local env
+network_domain: level12.net
+internal_hostname: "{{ inventory_hostname|replace('-prod', '')|replace('-beta', '') }}"
+host_fqdn: "{{ internal_hostname }}.{{network_domain}}"
+host_ip: "{{ lookup('dig', '+short', host_fqdn, '@ns-452.awsdns-56.com') }}"
+host_fqdn_pvt: "{{ internal_hostname }}.pvt.{{network_domain}}"
+host_ip_pvt: "{{ lookup('dig', '+short', host_fqdn_pvt, '@ns-452.awsdns-56.com') }}"
+
+ansible_os_family: Debian
+ansible_ssh_host: "{{ host_fqdn_pvt if use_pvt_dns else host_fqdn }}"
+ansible_service_mgr: systemd
+
+app_db_user: "{{project_ident_env}}"
+app_db_name: "{{project_ident_env}}"
+
+app_bin: "{{pyapp3_venv_bin_dpath}}/{{project_ident}}"
+app_error_notifications: devteam@level12.io
+
+app_rabbitmq_vhost: "{{project_ident_env}}"
+app_rabbitmq_user: "{{project_ident_env}}"
+
+app_celery_dir: '{{ project_home_dpath }}/celery'
+app_celery_pid_fpath: /tmp/{{ project_ident }}_celery.pid
+app_celery_alive_url: https://cronitor.link/{{app_celery_alive_key}}/complete
+
+nginx_vhost_name: "{{project_ident}}"
+nginx_vhost_enable_static_route: false
+nginx_vhost_www_only: false
+nginx_vhost_enable_ssl: true
+nginx_vhost_ssl_cert_pre_bundled: true
+nginx_vhost_ssl_cert_bundled_fpath: /etc/letsencrypt/live/{{ nginx_vhost_server_name }}/fullchain.pem
+nginx_vhost_ssl_cert_key_fpath: /etc/letsencrypt/live/{{ nginx_vhost_server_name }}/privkey.pem
+
+
+
+pyapp3_app_type: wsgi
+pyapp3_python_version: 3.8
+pyapp3_venv_use_timestamp: True
+pyapp3_requirements_fpath: "{{ pyapp3_requirements_dpath }}/common.txt"
+pyapp3_install_from_wheelhouse: false
+pyapp3_settings_dest_fpath: "{{ pyapp3_source_dpath }}/{{project_ident}}-config.py"
+pyapp3_settings_src_fpath: "files/{{project_ident}}-config.py"
+
+pyapp3_repo_url: "ssh://git@github.com/nicoavn/codecovtest"
+
+pyapp3_wsgi_extras_all:
+  - "# Note about disable file wrapper: https://level12.atlassian.net/wiki/pages/viewpage.action?pageId=75981397"
+  - "wsgi-disable-file-wrapper=true"
+  - "# Any files created by the app user should be read/write for app user & user both."
+  - "umask=002"
+
+  # Setup the celery processes
+  # Signal 15 is SIGTERM which is what Celery expects for a warm shutdown. That
+  # means that Celery will gracefully shutdown and then uWSGI will restart it.
+  # We could use SIGHUP here but that isn't a good idea in production.
+  - >
+    attach-daemon2 =
+    command={{ pyapp3_venv_bin_dpath }}/celery
+    --app={{project_ident}}.celery.worker
+    worker
+    --workdir={{ project_home_dpath }}
+    --pidfile={{ app_celery_pid_fpath }}
+    --hostname=celery.%h,
+    pidfile={{ app_celery_pid_fpath }},
+    freq=2,
+    reloadsignal=15,
+    stopsignal=15
+

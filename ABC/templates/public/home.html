@@ -1,0 +1,12 @@
+{% set title = 'Hello' %}
+{% extends 'includes/base-page.html' %}
+{% block page_content %}
+    <h1>Hello</h1>
+
+    {% if current_user.is_authenticated %}
+    <p>This is the home page. :)</p>
+    {% else %}
+    <p>You need to login.</p>
+    {% endif %}
+{% endblock %}
+

@@ -1,0 +1,7 @@
+- name: restart ABC service
+  hosts: webservers
+  become: true
+  tasks:
+    - service:
+        name: ABC
+        state: restarted

@@ -1,0 +1,37 @@
+# Docker Notes
+# ============
+# - `docker-compose up`: bring up containers
+# - `docker-compose up -d`: same, but run in background/daemon mode
+# - `docker-compose down`: bring down containers started with `-d`
+# - `docker ps`: show running containers
+# - `docker ps -a`: show all containers
+# - `docker-compose exec <container name> /bin/bash`: get shell in app container
+# - `docker images`
+# - `docker rmi <image name>`
+# - `docker stop $(docker ps -aq)`: stop all running containers
+# - `docker rm $(docker ps -a -q)`: remove all stopped containers
+#
+# Can use a .env to customize port mappings, but that will only work when running docker-compose in
+# the same directory as this file.  You can also use an override file if desired.
+# https://docs.docker.com/compose/environment-variables/
+# https://docs.docker.com/compose/extends/
+
+version: '2'
+services:
+  abc-pg:
+      image: postgres:13-alpine
+      container_name: abc-pg
+      ports:
+        - '${KEG_APP_POSTGRES_IP:-127.0.0.1}:${KEG_APP_POSTGRES_PORT:-12432}:5432'
+      environment:
+        POSTGRES_MULTIPLE_DATABASES: abc,abc-tests
+        # Ok for local dev, potentially UNSAFE in other applications.  Don't blindly copy & paste
+        # without considering implications.
+        POSTGRES_HOST_AUTH_METHOD: trust
+      volumes:
+        - ./docker/pg-init-scripts:/docker-entrypoint-initdb.d
+  abc-rabbitmq:
+      image: rabbitmq:3.8-alpine
+      container_name: abc-rabbitmq
+      ports:
+        - '${KEG_APP_RABBITMQ_IP:-127.0.0.1}:${KEG_APP_RABBITMQ_PORT:-12672}:5672'

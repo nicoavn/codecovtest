@@ -1,0 +1,38 @@
+version: 2
+jobs:
+    build:
+        docker:
+            - image: level12/python-test-multi
+            - image: rabbitmq:3.8
+            - image: postgres:13
+              environment:
+                  POSTGRES_USER: postgres
+                  POSTGRES_PASSWORD: password
+        steps:
+            - checkout
+
+            - run:
+                name: folder listing for debugging
+                command: ls -al
+
+            - run:
+                name: install testing helpers needed at OS level
+                command: >
+                    python3.9 -m pip install tox
+
+            - run:
+                name: version checks
+                command: |
+                    python3.9 --version
+                    tox --version
+
+            - run:
+                name: run tox
+                command: tox
+
+            - store_test_results:
+                path: .ci/test-reports/
+
+            - run:
+                name: push code coverage
+                command: bash scripts/codecov-verify && codecov -X coveragepy -t 179b2789-28cd-4f4a-9cf1-68262d9d0ad3

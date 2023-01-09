@@ -1,0 +1,12 @@
+
+- name: grant ssh access to user keys
+  hosts: webservers
+  remote_user: "{{project_user}}"
+  vars_files:
+    - "{{ lookup('env','ANSIBLE_ROLES_PATH') }}/includes/vars.yml"
+  tags:
+    - web
+  roles:
+    - role: project
+      project_op: ssh-keys
+

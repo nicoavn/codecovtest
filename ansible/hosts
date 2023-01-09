@@ -1,0 +1,15 @@
+[webservers]
+vault
+bank
+
+[beta]
+bank
+circus-beta
+
+[prod]
+vault
+circus-prod
+
+[dbservers]
+circus-prod
+circus-beta
